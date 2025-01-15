@@ -7,18 +7,26 @@ const cors = require('cors');
 dotenv.config();
 const app = express();
 
-app.use(cors({
-  origin: 'https://mohammads-dynamite-site-85779b.webflow.io', // Replace with your Webflow domain
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include all HTTP methods you need
-  allowedHeaders: ['Content-Type', 'Authorization'], // Add Authorization to allowed headers
-}));
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests from your development and production domains
+    if (!origin || ['http://localhost:3000', 'https://mohammads-dynamite-site-85779b.webflow.io'].includes(origin)) {
+      callback(null, true); // Allow the request
+    } else {
+      callback(new Error('CORS not allowed')); // Block the request
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow these methods
+  allowedHeaders: ['Content-Type', 'Authorization'],   // Allow these headers
+};
 
-// Handle preflight requests (important for Authorization headers)
-app.options('*', cors({
-  origin: 'https://mohammads-dynamite-site-85779b.webflow.io',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// Apply CORS middleware to your app
+app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+
 
 // Middleware
 app.use(bodyParser.json());
